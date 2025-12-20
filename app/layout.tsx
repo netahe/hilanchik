@@ -25,17 +25,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-
   const session = await getSession();
+
   return (
-    <html lang="en">
+    <html dir="rtl" lang="he">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider session={session}>
           <Header />
-        {children}
+          {children}
         </AuthProvider>
       </body>
     </html>

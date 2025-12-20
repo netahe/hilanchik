@@ -1,14 +1,18 @@
 "use client"
 
-import {  useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import {MainMenu} from '@/components/mainMenu';
+
 
 export default function Home() {
-      const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
 
-      console.log(session);
   return (
     <div>
-      {status === "authenticated" ?  <p>Welcome to Hilanchik!</p> : <p>Please log in to view your information</p> }
+      {
+      status === "authenticated" ?  
+       <MainMenu /> :
+      <p>התחבר.י כדי לעדכן שעות</p> }
     </div>
   );
 }
