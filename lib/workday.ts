@@ -1,3 +1,5 @@
+'use server'
+
 import { getSession } from '@/auth';
 import dayjs, { Dayjs } from 'dayjs';
 import { insertDailyReport, insertWages } from './db';
@@ -20,9 +22,9 @@ export const updateWages = async (formData: FormData) => {
     const travelFees = formData.get('travelFees');
     const session = await getSession();
 
-    insertWages(session?.user?.email ?? "", hourlyWage as string, travelFees as string);
+    return insertWages(session?.user?.email ?? "", hourlyWage as string, travelFees as string);
 
 }
 
-export const getPeriodicReport = () => {};
-export const calculateDailyWage = (start: dayjs.Dayjs, end: dayjs.Dayjs, rate: number) => {};
+export const getPeriodicReport = async () => {};
+export const calculateDailyWage = async (start: dayjs.Dayjs, end: dayjs.Dayjs, rate: number) => {};

@@ -1,9 +1,10 @@
-import { updateWages } from "@/lib/workday";
+import { getSession } from "@/auth";
+import RatesForm from "./RatesForm";
+import { selectRates } from "@/lib/db";
 
-export default function Settings () {
-    return <form action={updateWages}>
-        <label>שכר לשעה<input name="hourlyWage" type="number" /></label>
-        <label>דמי נסיעות ליום<input name="travelFees" type="number" /></label>
-        <button type="submit">שמירה</button>
-    </form>
+export default async function Settings () {
+    const session = await getSession();
+    const rates = await selectRates(session?.user?.email ?? "") ?? {travel: undefined, wage: undefined};
+
+    return <RatesForm rates={rates[0] ?? {wage: "", travel: ""}} />
 }
