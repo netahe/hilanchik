@@ -1,7 +1,8 @@
 import { drizzle } from "drizzle-orm/node-postgres";
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and, lte, gte, getTableColumns, sum } from 'drizzle-orm';
 import { Dayjs } from "dayjs";
 import { hoursTable, ratesTable } from "./schema";
+import { getSession } from "@/auth";
 
 export const db = drizzle(process.env.DATABASE_URL ?? "");
 
@@ -28,12 +29,12 @@ export const insertWages = async (worker: string, hourlyRate: string, travelFees
         worker,
         currentHourlyWage: `${hourlyRate}`,
         currentTravelFees: `${travelFees}`
-    }).onConflictDoUpdate({ 
-        target: ratesTable.worker, 
-        set: { 
-            currentHourlyWage: sql.raw(`excluded."${ratesTable.currentHourlyWage.name}"`), 
-            currentTravelFees: sql.raw(`excluded."${ratesTable.currentTravelFees.name}"`) 
-        } 
+    }).onConflictDoUpdate({
+        target: ratesTable.worker,
+        set: {
+            currentHourlyWage: sql.raw(`excluded."${ratesTable.currentHourlyWage.name}"`),
+            currentTravelFees: sql.raw(`excluded."${ratesTable.currentTravelFees.name}"`)
+        }
     })
 }
 
@@ -48,6 +49,41 @@ export const selectRates = async (worker: string) => {
         .where(eq(ratesTable.worker, worker));
 }
 
-const selectPeriodicReport = (start: Dayjs, end: Dayjs) => {
+export const selectPeriodicReport = async (formData: FormData) => {
+    const start = formData.get('start') ?? "";
+    const end = formData.get('end') ?? "";
+    const durationInHours = sql<number>`round((extract(epoch from ${hoursTable.end} -  ${hoursTable.start})/3600)::numeric, 2)`;
 
+    const worker = (await getSession())?.user?.email;
+
+
+    const hours = db
+        .select({
+            ...getTableColumns(hoursTable),
+            durationInHours: durationInHours.as('duration_in_hours')
+        })
+        .from(hoursTable)
+        .where(
+            and(
+                eq(hoursTable.worker, worker ?? ""),
+                lte(hoursTable.day, end as string),
+                gte(hoursTable.day, start as string)
+            )).as('hours_with_duration');
+
+
+    const wagesSubquery = db.select({ 
+        start: hours.start,
+        end: hours.end,
+        day: hours.day,
+        durationInHours: hours.durationInHours,
+        travelFees: hours.travelFees,
+        hourlyWage: hours.hourlyWage,
+        totalWage: sql`duration_in_hours * "hourlyWage" + "travelFees"`.as('total_wage')
+    })
+    .from(hours).as('wages');
+
+    const report = db.select().from(wagesSubquery);
+    const totals = db.select({total: sum(wagesSubquery.totalWage)}).from(wagesSubquery);
+
+    return {report: await report, totals: await totals};
 };

@@ -1,6 +1,6 @@
 "use client"
 
-import { updateWages } from "@/lib/workday";
+import { updateWages } from "@/lib/actions";
 import { Button, Form, Input } from "@heroui/react";
 import React from "react";
 

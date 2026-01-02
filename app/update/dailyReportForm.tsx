@@ -1,6 +1,6 @@
 'use client'
 
-import { addDailyReport } from "@/lib/workday";
+import { addDailyReport } from "@/lib/actions";
 import { Button, Form, Input } from "@heroui/react";
 
 export const DailyReportForm = () => {

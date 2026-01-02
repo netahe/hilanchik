@@ -1,33 +1,20 @@
-import { getSession } from "@/auth";
-import { db } from "@/lib/db";
-import { eq } from "drizzle-orm";
-import { hoursTable } from "@/lib/schema";
+"use client"
 
-export default async function Reports() {
-  const session = await getSession();
-  const reports = await db
-    .select()
-    .from(hoursTable)
-    .where(eq(hoursTable.worker, session?.user?.email ?? ""));
+import { PeriodSelectionForm } from "./periodSelectionForm";
+import { getPeriodicReport } from "@/lib/actions";
+import React from "react";
+import { PeriodicReport } from "./reportTable";
+import { useSession } from "next-auth/react";
+
+export default  function Reports() {
+
+  const session = useSession();
+  const [periodicReport, requestPeriodicReport] = React.useActionState(getPeriodicReport, undefined);
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>תאריך</th>
-          <th>התחלה</th>
-          <th>סיום</th>
-        </tr>
-      </thead>
-      <tbody>
-      {reports.map((report) => (
-        <tr key={report.day}>
-          <td>{report.day}</td>
-          <td>{report.start}</td>
-          <td>{report.end}</td>
-        </tr>
-      ))}
-      </tbody>
-    </table>
+    <>
+      <PeriodSelectionForm onSubmit={requestPeriodicReport} />
+      <PeriodicReport periodicReport={periodicReport ?? []} />
+    </>
   );
 }
