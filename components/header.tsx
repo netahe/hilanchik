@@ -13,6 +13,7 @@ import {
   NavbarMenuToggle,
 } from "@heroui/react";
 import Link from "next/link";
+import React from "react";
 
 const SessionToggle = () => {
   const { data: session, status } = useSession();
@@ -26,19 +27,20 @@ const SessionToggle = () => {
 
 export const Header = () => {
        const { data: session, status } = useSession();
+      const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   return (
-    <Navbar>
+    <Navbar isMenuOpen={isMenuOpen} onMenuOpenChange={setIsMenuOpen}>
       <NavbarContent justify="end">
         {status === 'authenticated' && <> <NavbarMenuToggle />
         <NavbarMenu>
-          <NavbarMenuItem>
+          <NavbarMenuItem onClick={() => setIsMenuOpen(false)}>
             <Link href="/update">עדכון שעות</Link>
           </NavbarMenuItem>
-          <NavbarMenuItem>
+          <NavbarMenuItem onClick={() => setIsMenuOpen(false)}>
             <Link href="/reports">דוחות</Link>
           </NavbarMenuItem>
-          <NavbarMenuItem>
+          <NavbarMenuItem onClick={() => setIsMenuOpen(false)}>
             <Link href="/settings">הגדרות</Link>
           </NavbarMenuItem>
         </NavbarMenu> </>}
