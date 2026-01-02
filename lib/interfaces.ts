@@ -8,7 +8,6 @@ export interface WorkdayReport {
 }
 
 export interface DailyReport {
-    worker: string;
     start: string;
     end: string;
     day: string;
@@ -16,11 +15,10 @@ export interface DailyReport {
     hourlyWage: number;
     travelFees?: number;
     earnings: number;
+    dailyWage: number;
 }
 
 export interface PeriodicReport {
-    worker: string;
-    total: number;
-    reports: DailyReport[];
-    totalWage: number;
+    earnings: number;
+    reports: Pick<DailyReport, 'start' | 'end' | 'day' | 'dailyWage'>[];
 }

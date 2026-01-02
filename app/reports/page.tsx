@@ -4,17 +4,15 @@ import { PeriodSelectionForm } from "./periodSelectionForm";
 import { getPeriodicReport } from "@/lib/actions";
 import React from "react";
 import { PeriodicReport } from "./reportTable";
-import { useSession } from "next-auth/react";
 
 export default  function Reports() {
 
-  const session = useSession();
-  const [periodicReport, requestPeriodicReport] = React.useActionState(getPeriodicReport, undefined);
+  const [periodicReport, requestPeriodicReport] = React.useActionState(getPeriodicReport, {earnings: 0, reports: []});
 
   return (
     <>
       <PeriodSelectionForm onSubmit={requestPeriodicReport} />
-      <PeriodicReport periodicReport={periodicReport ?? []} />
+      <PeriodicReport periodicReport={periodicReport} />
     </>
   );
 }

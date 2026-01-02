@@ -3,6 +3,7 @@ import { eq, sql, and, lte, gte, getTableColumns, sum } from 'drizzle-orm';
 import { Dayjs } from "dayjs";
 import { hoursTable, ratesTable } from "./schema";
 import { getSession } from "@/auth";
+import { PeriodicReport } from "./interfaces";
 
 export const db = drizzle(process.env.DATABASE_URL ?? "");
 
@@ -49,7 +50,7 @@ export const selectRates = async (worker: string) => {
         .where(eq(ratesTable.worker, worker));
 }
 
-export const selectPeriodicReport = async (formData: FormData) => {
+export const selectPeriodicReport = async (formData: FormData): Promise<PeriodicReport> => {
     const start = formData.get('start') ?? "";
     const end = formData.get('end') ?? "";
     const durationInHours = sql<number>`round((extract(epoch from ${hoursTable.end} -  ${hoursTable.start})/3600)::numeric, 2)`;
@@ -78,12 +79,12 @@ export const selectPeriodicReport = async (formData: FormData) => {
         durationInHours: hours.durationInHours,
         travelFees: hours.travelFees,
         hourlyWage: hours.hourlyWage,
-        totalWage: sql`duration_in_hours * "hourlyWage" + "travelFees"`.as('total_wage')
+        dailyWage: sql<number>`duration_in_hours * "hourlyWage" + "travelFees"`.as('total_wage')
     })
     .from(hours).as('wages');
 
     const report = db.select().from(wagesSubquery);
-    const totals = db.select({total: sum(wagesSubquery.totalWage)}).from(wagesSubquery);
+    const totals = db.select({total: sum(wagesSubquery.dailyWage)}).from(wagesSubquery);
 
-    return {report: await report, totals: await totals};
+    return {reports: await report, earnings: parseInt((await totals)?.[0].total ?? '0')};
 };
